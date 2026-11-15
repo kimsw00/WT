@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#e5e7ea">
-<title>글방 1.0.2</title>
+<title>글방 1.0.3</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <style>
 :root{--bg:#e5e7ea;--p:#eceef0;--c:#f3f4f6;--l:#cdd1d7;--i:#2b2f35;--m:#6e7681;--a:#4b5563;--d:#3a3f47;--sh1:#bfc3c9;--sh2:#f3f4f6;--sel:#2563eb}
@@ -231,7 +231,7 @@ var GP=["#8a929e","#e5534b","#2f9e6e","#3b82f6","#e0a030","#a855c7","#14a3b8","#
 var TH=[
  "빈 곳 클릭: 사건 추가 · 드래그: 복수 선택 · 휠: 마우스 기준 확대/축소 · 미니맵/휠버튼: 이동",
  "드래그: 복수 선택 · 휠: 마우스 기준 확대/축소 · ⇢: 관계 연결",
- "대사␣ → \" · 인용␣ → 「 · 긴선␣ → ―― · 엔터: 닫는 기호 자동 입력"
+ "대사␣ → \" · 인용␣ → 「 · 긴선␣ → ― · 엔터: 닫는 기호 자동 입력"
 ];
 function isM(){return matchMedia("(max-width:720px)").matches}
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -394,191 +394,197 @@ function guideSvg(gs){
   return g.a=="x"?'<line x1="'+g.p+'" y1="'+g.f+'" x2="'+g.p+'" y2="'+g.t+'" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 4"/>':'<line x1="'+g.f+'" y1="'+g.p+'" x2="'+g.t+'" y2="'+g.p+'" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 4"/>';
  }).join("");
 }
-/* ---- 비교차·비중첩 직교 라우터 ---- */
-function makePortMap(links,boxMap){
- var sides={};
- links.forEach(function(l,idx){
-  var A=boxMap[l.a],B=boxMap[l.b];if(!A||!B)return;
-  var dx=B.cx-A.cx,dy=B.cy-A.cy,sa,sb;
-  if(Math.abs(dx)*Math.max(A.h,B.h)>=Math.abs(dy)*Math.max(A.w,B.w)){sa=dx>=0?"R":"L";sb=dx>=0?"L":"R"}
-  else{sa=dy>=0?"B":"T";sb=dy>=0?"T":"B"}
-  var ka=A.id+":"+sa,kb=B.id+":"+sb;
-  (sides[ka]=sides[ka]||[]).push({idx:idx,other:B,side:sa,box:A});
-  (sides[kb]=sides[kb]||[]).push({idx:idx,other:A,side:sb,box:B});
- });
- var ports={};
- Object.keys(sides).forEach(function(k){
-  var arr=sides[k],box=arr[0].box,s=arr[0].side,horiz=(s=="T"||s=="B");
-  arr.sort(function(u,v){return horiz?(u.other.cx-v.other.cx):(u.other.cy-v.other.cy)});
-  var n=arr.length,sideLen=horiz?box.w:box.h,span=Math.max(0,Math.min(sideLen-24,(n-1)*18));
-  if(n>1&&span<sideLen*.72)span=Math.min(sideLen-24,Math.max(span,sideLen*.65));
-  arr.forEach(function(it,i){
-   var off=n==1?0:((i/(n-1))-.5)*span,px,py,sx,sy;
-   var gap=horiz?Math.abs(it.other.cy-box.cy)-(box.h+it.other.h)/2:Math.abs(it.other.cx-box.cx)-(box.w+it.other.w)/2;
-   var baseStub=gap>0&&gap<40?Math.max(8,gap*.32):18;
-   var stub=baseStub+(n>1?(i%2)*8:0);
-   if(s=="L"){px=box.l;py=box.cy+off;sx=px-stub;sy=py}
-   else if(s=="R"){px=box.r;py=box.cy+off;sx=px+stub;sy=py}
-   else if(s=="T"){px=box.cx+off;py=box.t;sx=px;sy=py-stub}
-   else{px=box.cx+off;py=box.b;sx=px;sy=py+stub}
-   ports[it.idx+":"+box.id]={px:px,py:py,sx:sx,sy:sy};
-  });
- });
- return ports;
+/* ---- 4방향 스마트 출입 + 최단 직선 우선 & 상자/선 회피 라우터 ---- */
+function segHitsRect(x1,y1,x2,y2,l,r,t,b){
+ l+=.5;r-=.5;t+=.5;b-=.5;if(l>=r||t>=b)return false;
+ var dx=x2-x1,dy=y2-y1,t0=0,t1=1;
+ function clip(p,q){if(Math.abs(p)<1e-9)return q>=0;var u=q/p;if(p<0){if(u>t1)return false;if(u>t0)t0=u}else{if(u<t0)return false;if(u<t1)t1=u}return true}
+ return clip(-dx,x1-l)&&clip(dx,r-x1)&&clip(-dy,y1-t)&&clip(dy,b-y1)&&t0<=t1;
+}
+function segCross(a,b,c,d){
+ var x1=a[0],y1=a[1],x2=b[0],y2=b[1],x3=c[0],y3=c[1],x4=d[0],y4=d[1];
+ if(Math.max(x1,x2)<=Math.min(x3,x4)+1||Math.max(x3,x4)<=Math.min(x1,x2)+1||Math.max(y1,y2)<=Math.min(y3,y4)+1||Math.max(y3,y4)<=Math.min(y1,y2)+1)return false;
+ function ccw(p,q,r){return(q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0])}
+ var d1=ccw(a,b,c),d2=ccw(a,b,d),d3=ccw(c,d,a),d4=ccw(c,d,b);
+ return((d1>0&&d2<0)||(d1<0&&d2>0))&&((d3>0&&d4<0)||(d3<0&&d4>0));
+}
+function ptSegDist(px,py,ax,ay,bx,by){
+ var dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy;if(!l2)return Math.hypot(px-ax,py-ay);
+ var t=cl(((px-ax)*dx+(py-ay)*dy)/l2,0,1);
+ return Math.hypot(px-(ax+t*dx),py-(ay+t*dy));
+}
+function segSegClearPenalty(a,b,usedSegs){
+ var pen=0,minX=Math.min(a[0],b[0])-14,maxX=Math.max(a[0],b[0])+14,minY=Math.min(a[1],b[1])-14,maxY=Math.max(a[1],b[1])+14;
+ for(var k=0;k<usedSegs.length;k++){
+  var u=usedSegs[k];
+  if(Math.max(u[0][0],u[1][0])<minX||Math.min(u[0][0],u[1][0])>maxX||Math.max(u[0][1],u[1][1])<minY||Math.min(u[0][1],u[1][1])>maxY)continue;
+  if(segCross(a,b,u[0],u[1]))pen+=2800;
+  else{
+   var mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,umx=(u[0][0]+u[1][0])/2,umy=(u[0][1]+u[1][1])/2;
+   var d=Math.min(ptSegDist(mx,my,u[0][0],u[0][1],u[1][0],u[1][1]),ptSegDist(umx,umy,a[0],a[1],b[0],b[1]));
+   if(d<12)pen+=2400;
+  }
+ }
+ return pen;
+}
+function boxSides(b,stub){
+ return[
+  {s:"L",px:b.l,py:b.cy,sx:b.l-stub,sy:b.cy,nx:-1,ny:0},
+  {s:"R",px:b.r,py:b.cy,sx:b.r+stub,sy:b.cy,nx:1,ny:0},
+  {s:"T",px:b.cx,py:b.t,sx:b.cx,sy:b.t-stub,nx:0,ny:-1},
+  {s:"B",px:b.cx,py:b.b,sx:b.cx,sy:b.b+stub,nx:0,ny:1}
+ ];
 }
 function routeAll(links,boxMap,boxes,stems){
- var ports=makePortMap(links,boxMap),items=[];
+ var items=[];
  links.forEach(function(l,i){
   var A=boxMap[l.a],B=boxMap[l.b];if(!A||!B)return;
-  items.push({i:i,A:A,B:B,pA:ports[i+":"+A.id],pB:ports[i+":"+B.id],dist:Math.abs(A.cx-B.cx)+Math.abs(A.cy-B.cy)});
+  items.push({i:i,a:l.a,b:l.b,A:A,B:B,dist:Math.hypot(A.cx-B.cx,A.cy-B.cy)});
  });
  items.sort(function(u,v){return u.dist-v.dist||u.i-v.i});
- var usedH=[],usedV=[],out={};
+ var usedSegs=[],cornerUse={},rawRoutes=[],pairCount={};
+ function hitsAny(x1,y1,x2,y2,A,B,obs){
+  for(var k=0;k<obs.length;k++){
+   var o=obs[k],pad=(o.id===A.id||o.id===B.id)?2:15;
+   if(segHitsRect(x1,y1,x2,y2,o.l-pad,o.r+pad,o.t-pad,o.b+pad))return true;
+  }
+  return false;
+ }
+ function stemPen(x1,y1,x2,y2){
+  if(!stems)return 0;var p=0;
+  for(var k=0;k<stems.length;k++){var s=stems[k];if(segCross([x1,y1],[x2,y2],[s.x,s.y0],[s.x,s.y1]))p+=450}
+  return p;
+ }
  items.forEach(function(it){
-  var pA=it.pA,pB=it.pB,A=it.A,B=it.B;
-  var PAD=18,minX=Math.min(pA.sx,pB.sx,A.l,B.l)-220,maxX=Math.max(pA.sx,pB.sx,A.r,B.r)+220,minY=Math.min(pA.sy,pB.sy,A.t,B.t)-220,maxY=Math.max(pA.sy,pB.sy,A.b,B.b)+220;
-  var rel=[],rawX=[pA.sx,pB.sx,(pA.sx+pB.sx)/2],rawY=[pA.sy,pB.sy,(pA.sy+pB.sy)/2];
-  var bxMinL=Math.min(A.l,B.l),bxMaxR=Math.max(A.r,B.r),bxMinT=Math.min(A.t,B.t),bxMaxB=Math.max(A.b,B.b);
-  boxes.forEach(function(o){
-   if(o.r<minX||o.l>maxX||o.b<minY||o.t>maxY)return;
-   rel.push({l:o.l-PAD,r:o.r+PAD,t:o.t-PAD,b:o.b+PAD});
-   rawX.push(o.l-PAD,o.r+PAD);rawY.push(o.t-PAD,o.b+PAD);
-   if(o.l<bxMinL)bxMinL=o.l;if(o.r>bxMaxR)bxMaxR=o.r;
-   if(o.t<bxMinT)bxMinT=o.t;if(o.b>bxMaxB)bxMaxB=o.b;
-  });
-  rawX.push(bxMinL-36,bxMaxR+36,minX,maxX);
-  rawY.push(bxMinT-36,bxMaxB+36,minY,maxY);
-  var addX=[],addY=[];
-  usedV.forEach(function(u){
-   if(u.x>=minX&&u.x<=maxX&&u.y1>=minY&&u.y0<=maxY){addX.push(u.x-14,u.x+14)}
-  });
-  usedH.forEach(function(u){
-   if(u.y>=minY&&u.y<=maxY&&u.x1>=minX&&u.x0<=maxX){addY.push(u.y-14,u.y+14)}
-  });
-  function uniq(base,extra,keep1,keep2){
-   var all=base.concat(extra);
-   all.sort(function(a,b){return a-b});
-   var res=[];
-   all.forEach(function(v){
-    if(!res.length){res.push(v);return}
-    var prev=res[res.length-1],kNow=(Math.abs(v-keep1)<.1||Math.abs(v-keep2)<.1),kPrev=(Math.abs(prev-keep1)<.1||Math.abs(prev-keep2)<.1);
-    if(Math.abs(v-prev)<=5){
-     if(kNow&&!kPrev)res[res.length-1]=v;
-     else if(kNow&&kPrev&&Math.abs(v-prev)>.1)res.push(v);
-    }else res.push(v);
+  var A=it.A,B=it.B,pk=Math.min(A.id,B.id)+"-"+Math.max(A.id,B.id);
+  var pCnt=pairCount[pk]=(pairCount[pk]||0)+1;
+  var minX=Math.min(A.l,B.l)-240,maxX=Math.max(A.r,B.r)+240,minY=Math.min(A.t,B.t)-240,maxY=Math.max(A.b,B.b)+240;
+  var obs=boxes.filter(function(o){return o.r>=minX&&o.l<=maxX&&o.b>=minY&&o.t<=maxY});
+  var sA=boxSides(A,14),sB=boxSides(B,14);
+  // 1) 직선 최단경로 먼저 검사 (막힘/교차/겹침 없을 시 즉시 선택)
+  var bestDirect=null,bestDirectScore=1e15;
+  sA.forEach(function(pa){
+   sB.forEach(function(pb){
+    var vx=pb.px-pa.px,vy=pb.py-pa.py,len=Math.hypot(vx,vy);if(len<1)return;
+    var dotA=(vx*pa.nx+vy*pa.ny)/len,dotB=(-vx*pb.nx-vy*pb.ny)/len;
+    if(dotA<.12||dotB<.12)return;
+    if(hitsAny(pa.px,pa.py,pb.px,pb.py,A,B,obs))return;
+    var pen=segSegClearPenalty([pa.px,pa.py],[pb.px,pb.py],usedSegs)+stemPen(pa.px,pa.py,pb.px,pb.py);
+    var sc=len+pen;
+    if(sc<bestDirectScore){bestDirectScore=sc;bestDirect={pa:pa,pb:pb,pen:pen,pts:[[pa.px,pa.py],[pb.px,pb.py]]}}
    });
-   if(res.length>56){
-    var keepSet=new Set([keep1,keep2,res[0],res[res.length-1]]);
-    var filtered=[];
-    res.forEach(function(v){
-     if(keepSet.has(v)||!filtered.length||Math.abs(v-filtered[filtered.length-1])>10)filtered.push(v);
+  });
+  var chosen=null;
+  if(bestDirect&&bestDirect.pen===0){
+   chosen=bestDirect;
+  }else{
+   // 2) 막히거나 겹치면 4방향 모두 열어두고 장애물 모서리 기반 가시성 그래프 탐색
+   var nodes=[],stubsA=[],stubsB=[];
+   sA.forEach(function(pa){
+    if(hitsAny(pa.px,pa.py,pa.sx,pa.sy,A,B,obs))return;
+    var idx=nodes.length;nodes.push({x:pa.sx,y:pa.sy,side:pa});stubsA.push(idx);
+   });
+   sB.forEach(function(pb){
+    if(hitsAny(pb.px,pb.py,pb.sx,pb.sy,A,B,obs))return;
+    var idx=nodes.length;nodes.push({x:pb.sx,y:pb.sy,side:pb});stubsB.push(idx);
+   });
+   obs.forEach(function(o){
+    var p0=(o.id===A.id||o.id===B.id)?16:18;
+    [[o.l-p0,o.t-p0,"LT"],[o.r+p0,o.t-p0,"RT"],[o.r+p0,o.b+p0,"RB"],[o.l-p0,o.b+p0,"LB"]].forEach(function(c){
+     var ck=o.id+":"+c[2],u=cornerUse[ck]||0,off=u*12;
+     var cx=c[0]+(c[2][0]=="L"?-off:off),cy=c[1]+(c[2][1]=="T"?-off:off);
+     for(var k=0;k<obs.length;k++){
+      var q=obs[k],pad=(q.id===A.id||q.id===B.id)?2:14;
+      if(cx>q.l-pad&&cx<q.r+pad&&cy>q.t-pad&&cy<q.b+pad)return;
+     }
+     nodes.push({x:cx,y:cy,ck:ck});
     });
-    res=filtered;
-   }
-   return res;
-  }
-  var Xs=uniq(rawX,addX,pA.sx,pB.sx),Ys=uniq(rawY,addY,pA.sy,pB.sy),nx=Xs.length,ny=Ys.length;
-  function nearest(arr,v){var bi=0,bd=1e9;for(var i=0;i<arr.length;i++){var d=Math.abs(arr[i]-v);if(d<bd){bd=d;bi=i}}return bi}
-  var si=nearest(Xs,pA.sx),sj=nearest(Ys,pA.sy),ti=nearest(Xs,pB.sx),tj=nearest(Ys,pB.sy);
-  function blocked(x,y){
-   for(var k=0;k<rel.length;k++){var r=rel[k];if(x>r.l&&x<r.r&&y>r.t&&y<r.b)return true}
-   return false;
-  }
-  function segCost(x0,y0,x1,y1,dir){
-   var pen=0;
-   if(dir==0){
-    var lo=Math.min(x0,x1),hi=Math.max(x0,x1);
-    for(var k=0;k<usedH.length;k++){
-     var u=usedH[k];
-     if(Math.abs(u.y-y0)<10&&Math.min(u.x1,hi)-Math.max(u.x0,lo)>2)pen+=16000;
-    }
-    for(var k=0;k<usedV.length;k++){
-     var v=usedV[k];
-     if(v.x>lo+2&&v.x<hi-2&&y0>v.y0+2&&y0<v.y1-2)pen+=4500;
-    }
-    if(stems){
-     for(var k=0;k<stems.length;k++){
-      var s=stems[k];
-      if(s.x>lo+2&&s.x<hi-2&&y0>s.y0&&y0<s.y1)pen+=700;
+   });
+   var N=nodes.length;
+   if(N&&stubsA.length&&stubsB.length){
+    var dist=new Float64Array(N),prev=new Int32Array(N),heap=[];
+    for(var i=0;i<N;i++){dist[i]=1e15;prev[i]=-1}
+    function pushH(c,id){heap.push([c,id]);var k=heap.length-1;while(k>0){var p=(k-1)>>1;if(heap[p][0]<=heap[k][0])break;var t=heap[p];heap[p]=heap[k];heap[k]=t;k=p}}
+    function popH(){var top=heap[0],last=heap.pop();if(heap.length){heap[0]=last;var k=0,n=heap.length;while(true){var l=k*2+1,r=l+1,m=k;if(l<n&&heap[l][0]<heap[m][0])m=l;if(r<n&&heap[r][0]<heap[m][0])m=r;if(m==k)break;var t=heap[k];heap[k]=heap[m];heap[m]=t;k=m}}return top}
+    stubsA.forEach(function(si){dist[si]=14;pushH(14,si)});
+    var bSet=new Set(stubsB),goal=-1;
+    while(heap.length){
+     var cur=popH(),cd=cur[0],u=cur[1];if(cd>dist[u])continue;
+     if(bSet.has(u)){goal=u;break}
+     var nu=nodes[u];
+     for(var v=0;v<N;v++){
+      if(v==u||stubsA.indexOf(v)>=0)continue;
+      var nv=nodes[v];
+      if(hitsAny(nu.x,nu.y,nv.x,nv.y,A,B,obs))continue;
+      var len=Math.hypot(nv.x-nu.x,nv.y-nu.y);
+      var pen=segSegClearPenalty([nu.x,nu.y],[nv.x,nv.y],usedSegs)+stemPen(nu.x,nu.y,nv.x,nv.y);
+      var turnPen=prev[u]>=0?40:0;
+      var nd=cd+len+pen+turnPen;
+      if(nd<dist[v]){dist[v]=nd;prev[v]=u;pushH(nd,v)}
      }
     }
-   }else{
-    var lo=Math.min(y0,y1),hi=Math.max(y0,y1);
-    for(var k=0;k<usedV.length;k++){
-     var u=usedV[k];
-     if(Math.abs(u.x-x0)<10&&Math.min(u.y1,hi)-Math.max(u.y0,lo)>2)pen+=16000;
-    }
-    for(var k=0;k<usedH.length;k++){
-     var h=usedH[k];
-     if(h.y>lo+2&&h.y<hi-2&&x0>h.x0+2&&x0<h.x1-2)pen+=4500;
+    if(goal>=0&&(!bestDirect||dist[goal]+14<bestDirectScore)){
+     var chain=[],c=goal;while(c>=0){chain.push(nodes[c]);c=prev[c]}chain.reverse();
+     var pa=chain[0].side,pb=chain[chain.length-1].side;
+     var pts=[[pa.px,pa.py]];
+     chain.forEach(function(nd){if(nd.ck)cornerUse[nd.ck]=(cornerUse[nd.ck]||0)+1;pts.push([nd.x,nd.y])});
+     pts.push([pb.px,pb.py]);
+     chosen={pa:pa,pb:pb,pts:pts,curved:false};
     }
    }
-   return pen;
+   if(!chosen)chosen=bestDirect||{pa:sA[0],pb:sB[0],pts:[[sA[0].px,sA[0].py],[sB[0].px,sB[0].py]]};
   }
-  var N=nx*ny*2,dist=new Float64Array(N),prev=new Int32Array(N);
-  for(var i=0;i<N;i++){dist[i]=1e15;prev[i]=-1}
-  var heap=[];
-  function pushH(c,id){heap.push([c,id]);var k=heap.length-1;while(k>0){var p=(k-1)>>1;if(heap[p][0]<=heap[k][0])break;var t=heap[p];heap[p]=heap[k];heap[k]=t;k=p}}
-  function popH(){var top=heap[0],last=heap.pop();if(heap.length){heap[0]=last;var k=0,n=heap.length;while(true){var l=k*2+1,r=l+1,m=k;if(l<n&&heap[l][0]<heap[m][0])m=l;if(r<n&&heap[r][0]<heap[m][0])m=r;if(m==k)break;var t=heap[k];heap[k]=heap[m];heap[m]=t;k=m}}return top}
-  var s0=(sj*nx+si)*2,s1=s0+1;dist[s0]=0;dist[s1]=0;pushH(0,s0);pushH(0,s1);
-  var goal=-1,dirs=[[1,0,0],[-1,0,0],[0,1,1],[0,-1,1]];
-  while(heap.length){
-   var cur=popH(),cd=cur[0],u=cur[1];if(cd>dist[u])continue;
-   var ud=u&1,uv=u>>1,ui=uv%nx,uj=(uv/nx)|0;
-   if(ui==ti&&uj==tj){goal=u;break}
-   for(var d=0;d<4;d++){
-    var vi=ui+dirs[d][0],vj=uj+dirs[d][1],vd=dirs[d][2];
-    if(vi<0||vi>=nx||vj<0||vj>=ny)continue;
-    var x0=Xs[ui],y0=Ys[uj],x1=Xs[vi],y1=Ys[vj],mx=(x0+x1)/2,my=(y0+y1)/2;
-    var step=Math.abs(x1-x0)+Math.abs(y1-y0)+(vd!=ud?220:0);
-    if(blocked(mx,my)||blocked(x1,y1))step+=100000;
-    step+=segCost(x0,y0,x1,y1,vd);
-    var v=(vj*nx+vi)*2+vd,nd=cd+step;
-    if(nd<dist[v]){dist[v]=nd;prev[v]=u;pushH(nd,v)}
-   }
-  }
-  var pts=[];
-  if(goal>=0){
-   var c=goal;
-   while(c>=0){var cv=c>>1,ci=cv%nx,cj=(cv/nx)|0;pts.push([Xs[ci],Ys[cj]]);c=prev[c]}
-   pts.reverse();
-  }else pts=[[pA.sx,pA.sy],[pB.sx,pB.sy]];
-  pts.unshift([pA.px,pA.py]);pts.push([pB.px,pB.py]);
-  var clean=[];
-  pts.forEach(function(p){
-   if(clean.length&&Math.hypot(p[0]-clean[clean.length-1][0],p[1]-clean[clean.length-1][1])<.5)return;
-   clean.push([p[0],p[1]]);
-   while(clean.length>=3){
-    var a=clean[clean.length-3],b=clean[clean.length-2],c=clean[clean.length-1];
-    if((Math.abs(a[0]-b[0])<.5&&Math.abs(b[0]-c[0])<.5)||(Math.abs(a[1]-b[1])<.5&&Math.abs(b[1]-c[1])<.5))clean.splice(clean.length-2,1);
-    else break;
-   }
-  });
-  for(var k=0;k<clean.length-1;k++){
-   var a=clean[k],b=clean[k+1];
-   if(Math.abs(a[1]-b[1])<.5)usedH.push({y:a[1],x0:Math.min(a[0],b[0]),x1:Math.max(a[0],b[0])});
-   else if(Math.abs(a[0]-b[0])<.5)usedV.push({x:a[0],y0:Math.min(a[1],b[1]),y1:Math.max(a[1],b[1])});
-  }
-  out[it.i]=ptsToPath(clean);
+  if(chosen.pts.length==2&&pCnt>1)chosen.bow=(pCnt%2===0?1:-1)*Math.ceil(pCnt/2)*16;
+  for(var k=0;k<chosen.pts.length-1;k++)usedSegs.push([chosen.pts[k],chosen.pts[k+1]]);
+  rawRoutes.push({i:it.i,A:A,B:B,pa:chosen.pa,pb:chosen.pb,pts:chosen.pts,bow:chosen.bow||0});
  });
+ // 3) 같은 변에 여러 선이 붙었을 때 끝점 팬아웃 정렬
+ var slots={};
+ rawRoutes.forEach(function(r){
+  var ka=r.A.id+":"+r.pa.s,kb=r.B.id+":"+r.pb.s;
+  (slots[ka]=slots[ka]||[]).push({r:r,isA:true,box:r.A,side:r.pa.s,next:r.pts[1]});
+  (slots[kb]=slots[kb]||[]).push({r:r,isA:false,box:r.B,side:r.pb.s,next:r.pts[r.pts.length-2]});
+ });
+ Object.keys(slots).forEach(function(k){
+  var arr=slots[k];if(arr.length<2)return;
+  var box=arr[0].box,s=arr[0].side,horiz=(s=="T"||s=="B"),span=Math.min((horiz?box.w:box.h)-24,(arr.length-1)*18);
+  arr.sort(function(u,v){return horiz?(u.next[0]-v.next[0]):(u.next[1]-v.next[1])});
+  arr.forEach(function(it,idx){
+   var off=(idx/(arr.length-1)-.5)*span,p=it.isA?it.r.pts[0]:it.r.pts[it.r.pts.length-1];
+   if(horiz)p[0]=box.cx+off;else p[1]=box.cy+off;
+  });
+ });
+ var out={};
+ rawRoutes.forEach(function(r){out[r.i]=buildSvgPath(r.pts,r.bow)});
  return out;
 }
-function ptsToPath(clean){
+function buildSvgPath(pts,bow){
+ if(pts.length==2){
+  var a=pts[0],b=pts[1];
+  if(!bow)return{d:"M"+a[0]+","+a[1]+"L"+b[0]+","+b[1],mid:[(a[0]+b[0])/2,(a[1]+b[1])/2]};
+  var dx=b[0]-a[0],dy=b[1]-a[1],len=Math.hypot(dx,dy)||1,mx=(a[0]+b[0])/2-dy/len*bow,my=(a[1]+b[1])/2+dx/len*bow;
+  return{d:"M"+a[0]+","+a[1]+"Q"+mx+","+my+" "+b[0]+","+b[1],mid:[(a[0]+2*mx+b[0])/4,(a[1]+2*my+b[1])/4]};
+ }
+ var clean=[];
+ pts.forEach(function(p){
+  if(clean.length&&Math.hypot(p[0]-clean[clean.length-1][0],p[1]-clean[clean.length-1][1])<1)return;
+  clean.push([p[0],p[1]]);
+ });
  var dStr="M"+clean[0][0]+","+clean[0][1];
  for(var i=1;i<clean.length-1;i++){
   var a=clean[i-1],b=clean[i],c=clean[i+1];
-  var d1=Math.hypot(b[0]-a[0],b[1]-a[1]),d2=Math.hypot(c[0]-b[0],c[1]-b[1]),r=Math.min(10,d1/2,d2/2);
-  if(r<.5){dStr+="L"+b[0]+","+b[1];continue}
+  var d1=Math.hypot(b[0]-a[0],b[1]-a[1]),d2=Math.hypot(c[0]-b[0],c[1]-b[1]),r=Math.min(14,d1/2,d2/2);
+  if(r<1){dStr+="L"+b[0]+","+b[1];continue}
   var p1x=b[0]-(b[0]-a[0])/d1*r,p1y=b[1]-(b[1]-a[1])/d1*r,p2x=b[0]+(c[0]-b[0])/d2*r,p2y=b[1]+(c[1]-b[1])/d2*r;
   dStr+="L"+p1x+","+p1y+"Q"+b[0]+","+b[1]+" "+p2x+","+p2y;
  }
  dStr+="L"+clean[clean.length-1][0]+","+clean[clean.length-1][1];
- var bestSeg=null,bestScore=-1;
+ var best=null,bestL=-1;
  for(var i=0;i<clean.length-1;i++){
-  var a=clean[i],b=clean[i+1],len=Math.hypot(b[0]-a[0],b[1]-a[1]),sc0=len*(i>0&&i<clean.length-2?1.5:0.7);
-  if(sc0>bestScore){bestScore=sc0;bestSeg=[(a[0]+b[0])/2,(a[1]+b[1])/2]}
+  var a=clean[i],b=clean[i+1],l=Math.hypot(b[0]-a[0],b[1]-a[1])*(i>0&&i<clean.length-2?1.25:0.9);
+  if(l>bestL){bestL=l;best=[(a[0]+b[0])/2,(a[1]+b[1])/2]}
  }
- return{d:dStr,mid:bestSeg||[(clean[0][0]+clean[clean.length-1][0])/2,(clean[0][1]+clean[clean.length-1][1])/2]};
+ return{d:dStr,mid:best||[(clean[0][0]+clean[clean.length-1][0])/2,(clean[0][1]+clean[clean.length-1][1])/2]};
 }
 /* ---- 플롯 탭 ---- */
 function nm(n){var a=[];for(var i=1;i<=n;i++)a.push(i+"화");return a}
@@ -1110,7 +1116,7 @@ $("er").addEventListener("click",function(e){var d=e.target.closest(".cd");if(d)
 $("ta").addEventListener("input",function(){
  var ta=this,p=ta.selectionStart,m=ta.value.slice(0,p).match(/(^|\s)(대사|인용|긴선) $/);
  if(m){
-  var rep=m[2]=="대사"?'"':(m[2]=="인용"?"「":"――");
+  var rep=m[2]=="대사"?'"':(m[2]=="인용"?"「":"―");
   ta.setRangeText(rep,p-m[2].length-1,p,"end");
  }
  S.texts[WK]=ta.value;cnt();pers();
