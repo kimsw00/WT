@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#e5e7ea">
-<title>글방 1.3.0</title>
+<title>글방 1.3.1</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&display=swap">
 <style>
@@ -173,7 +173,7 @@ html.dark .gp::after{background:#5d6573}
 #ta{flex:1;max-width:720px;width:100%;margin-inline:auto;background:transparent;border:0;border-top:1px solid var(--l);border-radius:0;padding-top:14px;resize:none;outline:none;font-size:16px;line-height:1.65}
 .cn{max-width:720px;width:100%;margin-inline:auto;color:var(--m);font-size:13px;border-top:1px solid var(--l);padding-top:8px;font-variant-numeric:tabular-nums}
 #md,#setmd,#pwmd,#expmd{position:fixed;inset:0;background:rgba(20,22,26,.48);display:grid;place-items:center;z-index:40}
-.mb{background:var(--p);border:1px solid var(--l);border-radius:20px;padding:22px;width:min(380px,92vw);animation:pop .2s;box-shadow:0 12px 40px rgba(0,0,0,.28)}
+.mb{background:var(--p);border:1px solid var(--l);border-radius:20px;padding:22px;width:min(400px,92vw);max-height:88dvh;overflow-y:auto;animation:pop .2s;box-shadow:0 12px 40px rgba(0,0,0,.28)}
 .mb h2,.mb p{margin:0 0 12px;font-weight:700;font-size:17px}
 #mi{display:flex;gap:8px;flex-wrap:wrap}
 #mi input,#mi select,#mi textarea,.pwf input,#exp-url{background:var(--c);border:1px solid var(--l);padding:10px 12px;flex:1;min-width:0;font-size:15px;width:100%}
@@ -202,7 +202,7 @@ html.dark .gp::after{background:#5d6573}
 .pwf{display:flex;flex-direction:column;gap:8px}
 .pw-sep{border-top:1px dashed var(--l);margin:8px 0;padding-top:10px;display:flex;flex-direction:column;gap:8px}
 .pw-sep small{color:var(--m);font-size:12px}
-.exp-box{display:flex;flex-direction:column;gap:12px}
+.exp-box{display:flex;flex-direction:column;gap:11px}
 .exp-seg{display:flex;background:var(--seg);border-radius:12px;padding:3px}
 .exp-seg button{flex:1;border:0;background:none;padding:6px 10px;min-height:34px;border-radius:9px;font-weight:600;color:var(--m);font-size:13.5px}
 .exp-seg button.on{background:var(--c);color:var(--i);box-shadow:0 1px 3px rgba(0,0,0,.18)}
@@ -213,7 +213,14 @@ html.dark .gp::after{background:#5d6573}
 .exp-sec{border-top:1px dashed var(--l);padding-top:12px;display:flex;flex-direction:column;gap:8px}
 .exp-sec b{font-size:14px}
 .exp-sec small{font-size:12px;color:var(--m);line-height:1.45}
-#exp-url{font-size:12.5px;padding:8px 10px;color:var(--m)}
+#exp-url{font-size:13px;padding:8px 10px;color:var(--i)}
+.exp-slist{display:flex;flex-direction:column;gap:6px;max-height:150px;overflow-y:auto}
+.exp-si{display:flex;align-items:center;gap:6px;padding:7px 9px;background:var(--c);border:1px solid var(--l);border-radius:10px;font-size:12px}
+.exp-si-m{flex:1;min-width:0}
+.exp-si-m b{display:block;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exp-si-m span{color:var(--m);font-size:11px}
+.exp-si button{min-height:26px;padding:2px 8px;font-size:11.5px;flex:none}
+.exp-si button.del{color:#d64545}
 #proj{position:fixed;inset:0;background:var(--bg);z-index:25;display:flex;flex-direction:column;overflow:hidden}
 .pjh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:max(12px,env(safe-area-inset-top)) 18px 12px;background:var(--p);border-bottom:1px solid var(--l)}
 .pjh-l{display:flex;align-items:center;gap:10px;min-width:0}
@@ -244,7 +251,6 @@ html.dark .gp::after{background:#5d6573}
 .pcard-bt{display:flex;justify-content:flex-end;gap:6px;margin-top:auto;padding-top:4px}
 .pcard-bt button{min-height:28px;padding:2px 9px;font-size:12px}
 .pcard-bt button.del{color:#d64545}
-/* 리더 공통 + 모바일 미리보기 */
 #readmd{position:fixed;inset:0;background:rgba(14,16,20,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:grid;place-items:center;z-index:45}
 .rd-phone{width:386px;height:min(780px,91dvh);max-width:95vw;border-radius:38px;border:8px solid #1e222a;box-shadow:0 24px 64px rgba(0,0,0,.48);overflow:hidden;display:flex;flex-direction:column;position:relative;transition:background .2s,color .2s;background:var(--rbg);color:var(--rfg)}
 .rd-phone[data-rt="light"],#shareview[data-rt="light"]{--rbg:#ffffff;--rfg:#1f2328;--rsub:#6b7280;--rbar:#f7f8fa;--rl:#e5e7eb}
@@ -275,7 +281,6 @@ html.dark .gp::after{background:#5d6573}
 .rd-imm-bar button{min-height:30px;padding:3px 10px;font-size:12px;border-radius:999px;background:rgba(20,22,26,.55);color:#fff;border:0;backdrop-filter:blur(4px)}
 .rd-phone.imm .rd-top,.rd-phone.imm .rd-bot{display:none}
 .rd-phone.imm .rd-imm-bar{display:block}
-/* 로그인 없는 공유 뷰어 (#shareview) */
 #shareview{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;background:var(--rbg);color:var(--rfg);transition:background .2s,color .2s}
 .sv-hd{flex:none;background:var(--rbar);border-bottom:1px solid var(--rl);padding:max(8px,env(safe-area-inset-top)) 14px 8px}
 .sv-hd-in,.sv-ft-in{max-width:680px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
@@ -432,7 +437,7 @@ html.dark #uit{background:rgba(43,47,54,.94);color:var(--i)}
 </div>
 <div class="pane" id="p2">
  <aside class="el" id="el"><div class="el-hd"><span>화 선택</span><button id="eexp2" type="button" disabled>📤 내보내기</button></div><div id="e1"></div></aside>
- <div class="ed"><div class="ed-hd"><button id="ewb" type="button">‹ 목록</button><div class="et" id="et"></div><button id="eprev" type="button" title="모바일 웹소설 리더 미리보기" disabled>📱 미리보기</button><button id="eexp" type="button" title="원고 내보내기 및 공유 링크" disabled>📤 내보내기</button></div><div id="mp" hidden></div><textarea id="ta" disabled></textarea><div class="cn" id="cn"></div></div>
+ <div class="ed"><div class="ed-hd"><button id="ewb" type="button">‹ 목록</button><div class="et" id="et"></div><button id="eprev" type="button" title="모바일 웹소설 리더 미리보기" disabled>📱 미리보기</button><button id="eexp" type="button" title="원고 내보내기 및 짧은 공유 링크" disabled>📤 내보내기</button></div><div id="mp" hidden></div><textarea id="ta" disabled></textarea><div class="cn" id="cn"></div></div>
  <aside class="er" id="er"><div class="eh">캐릭터</div><div id="e2"></div></aside>
 </div>
 </div>
@@ -468,7 +473,7 @@ html.dark #uit{background:rgba(43,47,54,.94);color:var(--i)}
 </div></div>
 
 <div id="expmd" hidden><div class="mb">
- <h2>내보내기 &amp; 뷰어 공유</h2>
+ <h2>내보내기 &amp; 짧은 링크 공유</h2>
  <div class="exp-box">
   <div class="exp-seg"><button type="button" id="exp-sc-cur" data-sc="cur">현재 화</button><button type="button" id="exp-sc-all" data-sc="all">전체 원고</button></div>
   <label class="exp-chk"><input type="checkbox" id="exp-inc-t" checked><span>복사 / TXT 파일에 화 제목 포함</span></label>
@@ -477,14 +482,17 @@ html.dark #uit{background:rgba(43,47,54,.94);color:var(--i)}
    <button type="button" id="exp-txt" class="btn-pri">📄 .txt 저장</button>
   </div>
   <div class="exp-sec">
-   <b>🔗 로그인 없는 읽기 전용 뷰어 링크</b>
+   <b>🔗 로그인 없는 짧은 뷰어 링크</b>
    <small>받는 사람이 로그인 없이 작성한 글만 바로 읽을 수 있습니다. (플롯·메모·캐릭터 비공개)</small>
-   <input id="exp-url" type="text" readonly placeholder="공유 링크 생성 중…">
-   <small id="exp-info"></small>
-   <div class="exp-row">
-    <button type="button" id="exp-lcopy" class="btn-pri">🔗 링크 복사</button>
-    <button type="button" id="exp-lopen">👁 뷰어 열기</button>
+   <button type="button" id="exp-mk" class="btn-pri">🔗 짧은 링크 만들기</button>
+   <div id="exp-res" hidden style="display:flex;flex-direction:column;gap:6px">
+    <input id="exp-url" type="text" readonly>
+    <div class="exp-row">
+     <button type="button" id="exp-lcopy">📋 링크 복사</button>
+     <button type="button" id="exp-lopen">👁 뷰어 열기</button>
+    </div>
    </div>
+   <div id="exp-slist" class="exp-slist"></div>
   </div>
   <div id="exp-msg" class="pok"></div>
  </div>
@@ -1942,7 +1950,6 @@ $("ta").addEventListener("beforeinput",function(e){
  if(/^\s*"/.test(line)&&(line.match(/"/g)||[]).length%2)c='"';else if(/^\s*「/.test(line)&&line.indexOf("」")<0)c="」";
  if(c){e.preventDefault();ta.setRangeText(c+"\n",p,p,"end");ta.dispatchEvent(new Event("input"))}
 });
-/* ---- 리더 공통 렌더링/설정 ---- */
 var RP={rt:"paper",rf:"sans",fs:17,lh:1.8,ind:false};
 try{var rpSaved=JSON.parse(localStorage.getItem(RK)||"null");if(rpSaved)RP=Object.assign(RP,rpSaved)}catch(e){}
 function saveRP(){try{localStorage.setItem(RK,JSON.stringify(RP))}catch(e){}}
@@ -2007,11 +2014,14 @@ $("rd-bot").addEventListener("click",function(e){
  else if(b.id=="rd-lh"){var L=[1.6,1.8,2.0];RP.lh=L[(L.indexOf(RP.lh)+1)%L.length];applyRP();updReadProg()}
  else if(b.id=="rd-ind"){RP.ind=!RP.ind;applyRP()}
 });
-/* ---- 내보내기(TXT/복사) & 로그인 없는 공유 뷰어 링크 ---- */
-function b64uEnc(bytes){
- var bin="",i=0,len=bytes.length;
- for(;i<len;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));
- return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+/* ---- 내보내기(TXT/복사) & 짧은 공유 링크(shares 테이블) ---- */
+function shareUrlOf(id){return location.href.split("#")[0].split("?")[0]+"?v="+encodeURIComponent(id)}
+function makeShareId(){
+ var chars="abcdefghjkmnpqrstuvwxyz23456789",arr=new Uint8Array(8),out="";
+ if(window.crypto&&crypto.getRandomValues)crypto.getRandomValues(arr);
+ else for(var i=0;i<8;i++)arr[i]=Math.floor(Math.random()*256);
+ for(var i=0;i<8;i++)out+=chars[arr[i]%chars.length];
+ return out;
 }
 function b64uDec(str){
  str=str.replace(/-/g,"+").replace(/_/g,"/");
@@ -2020,19 +2030,7 @@ function b64uDec(str){
  for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
  return bytes;
 }
-async function encodeShare(obj){
- var raw=new TextEncoder().encode(JSON.stringify(obj));
- if(typeof CompressionStream!=="undefined"){
-  try{
-   var cs=new CompressionStream("deflate-raw"),w=cs.writable.getWriter();
-   w.write(raw);w.close();
-   var buf=await new Response(cs.readable).arrayBuffer();
-   return"z."+b64uEnc(new Uint8Array(buf));
-  }catch(e){}
- }
- return"r."+b64uEnc(raw);
-}
-async function decodeShare(hash){
+async function decodeShareHash(hash){
  var token=hash.replace(/^#s=/,""),mode=token.slice(0,2),body=token.slice(2),bytes=b64uDec(body);
  if(mode==="z."){
   var ds=new DecompressionStream("deflate-raw"),w=ds.writable.getWriter();
@@ -2066,19 +2064,22 @@ function expPlainText(){
   return inc?(x.t+"\n\n"+body):body;
  }).join("\n\n----------------------------------------\n\n");
 }
-async function refreshShareLink(){
- var list=expEpisodes();
- $("exp-url").value="생성 중…";$("exp-info").textContent="";
- if(!list.length){$("exp-url").value="";$("exp-info").textContent="내보낼 화가 없습니다.";return}
- var payload={v:1,n:PNAME,e:list.map(function(x){return{t:x.t,b:(x.k==WK&&!$("ta").disabled?$("ta").value:(S.texts[x.k]||""))}})};
- var tok=await encodeShare(payload);
- var url=location.origin+location.pathname+"#s="+tok;
- $("exp-url").value=url;
- $("exp-info").textContent="링크 길이 "+url.length.toLocaleString()+"자"+(url.length>16000?" · 분량이 커서 일부 메신저에서는 링크가 잘릴 수 있습니다. '현재 화' 단위로 나누어 공유하는 것을 권장합니다.":" · 메신저로 바로 공유하기 적당한 길이입니다.");
-}
 function setExpMsg(t,err){
  var el=$("exp-msg");el.className=err?"perr":"pok";el.textContent=t;
- if(t)setTimeout(function(){if(el.textContent===t)el.textContent=""},2500);
+ if(t)setTimeout(function(){if(el.textContent===t)el.textContent=""},2800);
+}
+async function loadShareList(){
+ var box=$("exp-slist");
+ if(!PID){box.innerHTML="";return}
+ var r=await sb.from("shares").select("id,title,episodes,created").eq("project_id",PID).order("created",{ascending:false});
+ if(r.error){box.innerHTML='<small style="color:var(--m)">공유 목록을 불러올 수 없습니다.</small>';return}
+ var rows=r.data||[];
+ if(!rows.length){box.innerHTML="";return}
+ box.innerHTML=rows.map(function(row){
+  var epArr=Array.isArray(row.episodes)?row.episodes:[];
+  var label=epArr.length===1?(epArr[0].t||"1화"):("총 "+epArr.length+"화 ("+(epArr[0]?epArr[0].t:"")+")");
+  return'<div class="exp-si" data-id="'+esc(row.id)+'"><div class="exp-si-m"><b>'+esc(label)+'</b><span>?v='+esc(row.id)+" · "+esc(fmtTime(row.created))+'</span></div><button type="button" data-a="cp">복사</button><button type="button" data-a="op">열기</button><button type="button" class="del" data-a="rm">삭제</button></div>';
+ }).join("");
 }
 function openExportModal(){
  var list=eps();if(!list.length)return;
@@ -2087,9 +2088,9 @@ function openExportModal(){
  $("exp-sc-cur").disabled=!cur;
  $("exp-sc-cur").classList.toggle("on",EXP_SC==="cur");
  $("exp-sc-all").classList.toggle("on",EXP_SC==="all");
- $("exp-msg").textContent="";
+ $("exp-res").hidden=true;$("exp-url").value="";$("exp-msg").textContent="";
  $("expmd").hidden=false;
- refreshShareLink();
+ loadShareList();
 }
 $("eexp").onclick=$("eexp2").onclick=openExportModal;
 $("expx").onclick=function(){$("expmd").hidden=true};
@@ -2099,11 +2100,9 @@ $("exp-sc-cur").onclick=$("exp-sc-all").onclick=function(){
  EXP_SC=this.dataset.sc;
  $("exp-sc-cur").classList.toggle("on",EXP_SC==="cur");
  $("exp-sc-all").classList.toggle("on",EXP_SC==="all");
- refreshShareLink();
 };
 $("exp-copy").onclick=async function(){
- var txt=expPlainText();
- var ok=await copyTxt(txt);
+ var txt=expPlainText(),ok=await copyTxt(txt);
  setExpMsg(ok?"본문이 클립보드에 복사되었습니다.":"복사에 실패했습니다. 브라우저 권한을 확인하세요.",!ok);
 };
 $("exp-txt").onclick=function(){
@@ -2114,15 +2113,39 @@ $("exp-txt").onclick=function(){
  setTimeout(function(){URL.revokeObjectURL(u)},1000);
  setExpMsg("TXT 파일 저장을 시작했습니다.");
 };
+$("exp-mk").onclick=async function(){
+ var list=expEpisodes();if(!list.length)return;
+ var btn=this;btn.disabled=true;btn.textContent="생성 중…";
+ var epsData=list.map(function(x){return{t:x.t,b:(x.k==WK&&!$("ta").disabled?$("ta").value:(S.texts[x.k]||""))}});
+ var id=makeShareId();
+ var r=await sb.from("shares").insert({id:id,project_id:PID,title:PNAME,episodes:epsData,created:Date.now()});
+ btn.disabled=false;btn.textContent="🔗 짧은 링크 만들기";
+ if(r.error){setExpMsg("링크 생성 실패: "+r.error.message,true);return}
+ var url=shareUrlOf(id);
+ $("exp-url").value=url;$("exp-res").hidden=false;
+ var ok=await copyTxt(url);
+ setExpMsg(ok?"짧은 링크가 생성되어 복사되었습니다!":"짧은 링크가 생성되었습니다.",false);
+ loadShareList();
+};
 $("exp-lcopy").onclick=async function(){
  var u=$("exp-url").value;if(!u)return;
  var ok=await copyTxt(u);
- setExpMsg(ok?"공유 뷰어 링크가 복사되었습니다. 상대방에게 그대로 보내세요!":"링크 복사에 실패했습니다. 입력창을 눌러 직접 복사해 주세요.",!ok);
+ setExpMsg(ok?"공유 뷰어 링크가 복사되었습니다!":"링크 복사에 실패했습니다.",!ok);
 };
-$("exp-lopen").onclick=function(){
- var u=$("exp-url").value;if(u)window.open(u,"_blank");
-};
-/* ---- 공유 뷰어 실행 (#s=...) ---- */
+$("exp-lopen").onclick=function(){var u=$("exp-url").value;if(u)window.open(u,"_blank")};
+$("exp-slist").addEventListener("click",async function(e){
+ var row=e.target.closest(".exp-si"),b=e.target.closest("button");if(!row||!b)return;
+ var id=row.dataset.id,a=b.dataset.a,url=shareUrlOf(id);
+ if(a==="cp"){var ok=await copyTxt(url);setExpMsg(ok?"링크가 복사되었습니다.":"복사에 실패했습니다.",!ok)}
+ else if(a==="op"){window.open(url,"_blank")}
+ else if(a==="rm"){
+  var r=await sb.from("shares").delete().eq("id",id);
+  if(r.error){setExpMsg("삭제 실패: "+r.error.message,true);return}
+  if($("exp-url").value===url){$("exp-res").hidden=true;$("exp-url").value=""}
+  setExpMsg("공유 링크를 삭제했습니다.");loadShareList();
+ }
+});
+/* ---- 로그인 없는 공유 뷰어 실행 (?v=... / #v=... / #s=...) ---- */
 function applySVPrefs(){
  applyReaderTo($("shareview"),$("sv-fs"),$("sv-lh"),$("sv-ind"));
  var mc=document.querySelector('meta[name="theme-color"]');
@@ -2150,25 +2173,43 @@ function renderShareEp(idx){
  $("sv-scroll").scrollTop=0;
  updSVProg();
 }
-async function initShareView(){
- showScreen("share");
- applySVPrefs();
+function mountShareData(data){
+ if(!data||!Array.isArray(data.e)||!data.e.length)throw new Error("empty");
+ SV_DATA=data;
+ document.title=(SV_DATA.n||"원고")+" - 글방 뷰어";
+ $("sv-sel").innerHTML=SV_DATA.e.map(function(ep,i){return'<option value="'+i+'">'+esc(ep.t||((i+1)+"화"))+"</option>"}).join("");
+ $("sv-sel").hidden=SV_DATA.e.length<=1;
+ $("sv-prev").hidden=SV_DATA.e.length<=1;
+ $("sv-next").hidden=SV_DATA.e.length<=1;
+ renderShareEp(0);
+}
+function showShareError(msg){
+ $("sv-title").textContent="공유 원고";
+ $("sv-ep-lbl").textContent="열기 실패";
+ $("sv-ep-title").textContent="원고를 열 수 없습니다";
+ $("sv-body").innerHTML='<div class="rd-empty-txt">'+msg+"</div>";
+ $("sv-end").innerHTML="";
+ $("sv-prev").hidden=$("sv-next").hidden=$("sv-sel").hidden=true;
+}
+async function initShareViewById(id){
+ showScreen("share");applySVPrefs();
+ $("sv-title").textContent="글방 뷰어";$("sv-ep-lbl").textContent="불러오는 중…";
+ $("sv-ep-title").textContent="원고를 불러오는 중입니다…";$("sv-body").innerHTML="";$("sv-end").innerHTML="";
+ $("sv-prev").hidden=$("sv-next").hidden=$("sv-sel").hidden=true;
  try{
-  SV_DATA=await decodeShare(location.hash);
-  if(!SV_DATA||!Array.isArray(SV_DATA.e)||!SV_DATA.e.length)throw new Error("empty");
-  document.title=(SV_DATA.n||"원고")+" - 글방 뷰어";
-  $("sv-sel").innerHTML=SV_DATA.e.map(function(ep,i){return'<option value="'+i+'">'+esc(ep.t||((i+1)+"화"))+"</option>"}).join("");
-  $("sv-sel").hidden=SV_DATA.e.length<=1;
-  $("sv-prev").hidden=SV_DATA.e.length<=1;
-  $("sv-next").hidden=SV_DATA.e.length<=1;
-  renderShareEp(0);
+  var r=await sb.from("shares").select("title,episodes").eq("id",id).maybeSingle();
+  if(r.error||!r.data)throw new Error("notfound");
+  mountShareData({n:r.data.title||"공유 원고",e:Array.isArray(r.data.episodes)?r.data.episodes:[]});
  }catch(e){
-  $("sv-title").textContent="공유 원고";
-  $("sv-ep-lbl").textContent="링크 오류";
-  $("sv-ep-title").textContent="원고를 열 수 없습니다";
-  $("sv-body").innerHTML='<div class="rd-empty-txt">공유 링크가 손상되었거나 일부가 잘렸습니다.<br>작성자에게 링크를 다시 요청해 주세요.</div>';
-  $("sv-end").innerHTML="";
-  $("sv-prev").hidden=$("sv-next").hidden=$("sv-sel").hidden=true;
+  showShareError("삭제되었거나 존재하지 않는 공유 링크입니다.<br>작성자에게 링크를 다시 확인해 주세요.");
+ }
+}
+async function initShareViewHash(){
+ showScreen("share");applySVPrefs();
+ try{
+  mountShareData(await decodeShareHash(location.hash));
+ }catch(e){
+  showShareError("공유 링크가 손상되었거나 일부가 잘렸습니다.<br>작성자에게 링크를 다시 요청해 주세요.");
  }
 }
 $("sv-prev").onclick=function(){renderShareEp(SV_IDX-1)};
@@ -2273,9 +2314,17 @@ if(window.visualViewport){visualViewport.addEventListener("resize",vv);visualVie
 addEventListener("resize",function(){vv();PVW=$("pv").clientWidth;PB.ap();CB.ap()});vv();
 document.addEventListener("visibilitychange",function(){if(!document.hidden&&SCREEN==="app"&&PID)pull()});
 window.addEventListener("online",function(){if(SCREEN==="app"&&PID)pull()});
-window.addEventListener("hashchange",function(){if(location.hash.indexOf("#s=")===0)initShareView()});
-if(location.hash.indexOf("#s=")===0){
- initShareView();
+window.addEventListener("hashchange",function(){
+ if(location.hash.indexOf("#v=")===0)initShareViewById(location.hash.slice(3).trim());
+ else if(location.hash.indexOf("#s=")===0)initShareViewHash();
+});
+var qv=new URLSearchParams(location.search).get("v");
+if(qv){
+ initShareViewById(qv.trim());
+}else if(location.hash.indexOf("#v=")===0){
+ initShareViewById(location.hash.slice(3).trim());
+}else if(location.hash.indexOf("#s=")===0){
+ initShareViewHash();
 }else{
  sb.auth.onAuthStateChange(function(ev){if(ev==="PASSWORD_RECOVERY")openPwModal("recovery")});
  sb.auth.getSession().then(function(r){
